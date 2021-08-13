@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 
+// MODEL
 const orderSchema = mongoose.Schema(
   {
     name: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' },
@@ -28,7 +29,6 @@ const orderSchema = mongoose.Schema(
       status: { type: String },
       update_time: { type: String },
       email_address: { type: String },
-      required: true,
     },
     taxPrice: { type: Number, required: true, default: 0.0 },
     shippingPrice: { type: Number, required: true, default: 0.0 },
@@ -36,15 +36,13 @@ const orderSchema = mongoose.Schema(
     isPaid: { type: Boolean, required: true, default: false },
     paidAt: { type: Date },
     isDelivered: { type: Boolean, required: true, default: false },
-    deliveredAt: {
-      type: Date,
-    },
+    deliveredAt: { type: Date },
   },
   {
     timestamps: true,
   }
 )
 
-// create model from this schema
+// create modMODEL from this SCHEMA
 const Order = mongoose.model('Order', orderSchema)
 export default Order

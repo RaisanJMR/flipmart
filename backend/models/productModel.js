@@ -1,5 +1,6 @@
 import mongoose from 'mongoose'
 
+// SCHEMA
 const reviewSchema = mongoose.Schema(
   {
     name: { type: String, required: true },
@@ -26,6 +27,6 @@ const productSchema = mongoose.Schema(
   { timestamps: true }
 )
 
-// create model from this schema
+// create MODEL from this SCHEMA
 const Product = mongoose.model('Product', productSchema)
 export default Product
