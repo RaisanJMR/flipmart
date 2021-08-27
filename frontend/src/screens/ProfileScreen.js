@@ -5,7 +5,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import Message from '../components/Message'
 import Loader from '../components/Loader'
 import { getUserDetails, updateUserProfile } from '../actions/userActions'
-import FormContainer from '../components/FormContainer'
+// import FormContainer from '../components/FormContainer'
 
 const ProfileScreen = ({ location, history }) => {
   // console.log("location->",location)
@@ -30,7 +30,7 @@ const ProfileScreen = ({ location, history }) => {
   const { success } = userUpdateProfile
   // console.log(userInfo)
 
-  const redirect = location.search ? location.search.split('=')[1] : '/'
+  // const redirect = location.search ? location.search.split('=')[1] : '/'
   // console.log('redirect->',redirect)
   useEffect(() => {
     if (!userInfo) {
