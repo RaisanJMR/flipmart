@@ -29,10 +29,9 @@ const addOrderItems = asyncHandler(async (req, res) => {
       shippingPrice,
       totalPrice,
     })
+    // console.log('ORDER SUMMARY', order)
     const createdOrder = await order.save()
     res.status(201).json(createdOrder)
   }
 })
-export {
-    addOrderItems
-}
+export { addOrderItems }
