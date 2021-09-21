@@ -18,8 +18,12 @@ app.get('/', (req, res) => {
   res.send('api running..')
 })
 app.use('/api/products', productRoutes)
-app.use('/api/users',userRoutes)
+app.use('/api/users', userRoutes)
 app.use('/api/orders', orderRoutes)
+
+app.get('/api/config/paypal', (req, res) => {
+  res.send(process.env.PAYPAL_CLIENT_ID)
+})
 // NOT FOUND ERROR HANDLER
 app.use(notFound)
 //PRODUCT NOT FOUND ERROR HANDLER
