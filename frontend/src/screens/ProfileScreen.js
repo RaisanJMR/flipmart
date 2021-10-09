@@ -6,7 +6,7 @@ import Message from '../components/Message'
 import Loader from '../components/Loader'
 import { getUserDetails, updateUserProfile } from '../actions/userActions'
 import { listMyOrders } from '../actions/orderActions'
-import { orderDetailsReducer } from '../reducers/orderReducers'
+// import { orderDetailsReducer } from '../reducers/orderReducers'
 // import FormContainer from '../components/FormContainer'
 
 const ProfileScreen = ({ location, history }) => {
