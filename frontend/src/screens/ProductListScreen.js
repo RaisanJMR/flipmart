@@ -4,13 +4,20 @@ import { Button, Table, Row, Col } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import Message from '../components/Message'
 import Loader from '../components/Loader'
-import { listProducts } from '../actions/productActions'
+import { listProducts, deleteProduct } from '../actions/productActions'
 
 function ProductListScreen({ history, match }) {
   const dispatch = useDispatch()
 
   const productList = useSelector((state) => state.productList)
   const { loading, error, products } = productList
+
+  const productDelete = useSelector((state) => state.productDelete)
+  const {
+    loading: loadingDelete,
+    error: errorDelete,
+    success: successDelete,
+  } = productDelete
 
   const userLogin = useSelector((state) => state.userLogin)
   const { userInfo } = userLogin
@@ -21,7 +28,7 @@ function ProductListScreen({ history, match }) {
     } else {
       history.push('/login')
     }
-  }, [dispatch, history, userInfo])
+  }, [dispatch, history, userInfo, successDelete])
 
   const createProductHandler = (product) => {
     if (window.confirm('Are you sure to create a new product')) {
@@ -30,7 +37,7 @@ function ProductListScreen({ history, match }) {
   }
   const deleteHandler = (id) => {
     if (window.confirm('Are you sure to delete your product')) {
-      //  DELETE PRODUCTS
+      dispatch(deleteProduct(id))
     }
   }
 
@@ -46,6 +53,8 @@ function ProductListScreen({ history, match }) {
           </Button>
         </Col>
       </Row>
+      {loadingDelete && <Loader />}
+      {errorDelete && <Message variant='danger'>{errorDelete}</Message>}
       {loading ? (
         <Loader />
       ) : error ? (
@@ -67,15 +76,9 @@ function ProductListScreen({ history, match }) {
               <tr key={product._id}>
                 <td>{product._id}</td>
                 <td>{product.name}</td>
-                <td>
-                  ${product.price}
-                </td>
-                <td>
-                 {product.category}
-                </td>
-                <td>
-                 {product.brand}
-                </td>
+                <td>${product.price}</td>
+                <td>{product.category}</td>
+                <td>{product.brand}</td>
                 <td>
                   <LinkContainer to={`/admin/product/${product._id}/edit`}>
                     <Button variant='light' className='btn-sm'>
