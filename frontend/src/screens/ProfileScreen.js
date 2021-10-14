@@ -6,6 +6,7 @@ import Message from '../components/Message'
 import Loader from '../components/Loader'
 import { getUserDetails, updateUserProfile } from '../actions/userActions'
 import { listMyOrders } from '../actions/orderActions'
+
 // import { orderDetailsReducer } from '../reducers/orderReducers'
 // import FormContainer from '../components/FormContainer'
 
@@ -31,7 +32,7 @@ const ProfileScreen = ({ location, history }) => {
   // console.log(userLogin);
   const { success } = userUpdateProfile
   // console.log(userInfo)
-
+  
   // const redirect = location.search ? location.search.split('=')[1] : '/'
   // console.log('redirect->',redirect)
   const orderListMy = useSelector((state) => state.orderListMy)

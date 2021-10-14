@@ -9,13 +9,16 @@ import {
   deleteProduct,
   createProduct,
 } from '../actions/productActions'
+import Paginate from '../components/Paginate'
 import { PRODUCT_CREATE_RESET } from '../constants/productConstants'
 
 function ProductListScreen({ history, match }) {
+  const pageNumber = match.params.pageNumber || 1
+
   const dispatch = useDispatch()
 
   const productList = useSelector((state) => state.productList)
-  const { loading, error, products } = productList
+  const { loading, error, products, page, pages } = productList
 
   const productDelete = useSelector((state) => state.productDelete)
   const {
@@ -43,9 +46,9 @@ function ProductListScreen({ history, match }) {
     if (successCreate) {
       history.push(`/admin/product/${createdProduct._id}/edit`)
     } else {
-      dispatch(listProducts())
+      dispatch(listProducts('', pageNumber))
     }
-  }, [dispatch, history, userInfo, successDelete, successCreate, createdProduct])
+  }, [dispatch, history, userInfo, successDelete, successCreate, createdProduct, pageNumber])
 
   const createProductHandler = () => {
     if (window.confirm('Are you sure to create a new product')) {
@@ -80,6 +83,7 @@ function ProductListScreen({ history, match }) {
       ) : error ? (
         <Message variant='danger'>{error}</Message>
       ) : (
+        <>
         <Table striped bordered hover responsive className='table-sm'>
           <thead>
             <tr>
@@ -119,6 +123,8 @@ function ProductListScreen({ history, match }) {
             ))}
           </tbody>
         </Table>
+        <Paginate pages={pages} page={page} isAdmin={true}/>
+        </>
       )}
     </>
   )
