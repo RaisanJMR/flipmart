@@ -2,6 +2,8 @@
 ----
 > The MERN stack eCommerce platform to sell and buy products
 
+![flipbay image](./gitasset/flipbay.gif)
+
 Tech Stack
 - MongoDB - database,
 - Express - backend framework,
