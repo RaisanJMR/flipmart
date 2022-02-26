@@ -102,6 +102,16 @@ npm run data:import
 # Destroy data
 npm run
 ```
+### 5. Paypal credentials
+ paypal credentials for payment
+
+```
+# email
+sb-q475kk7727209@personal.example.com
+
+# password
+(X#i5V7f63lOj)
+```
 
 ## License
 ---
