@@ -17,11 +17,10 @@ connectDB()
 
 const app = express()
 app.use(express.json())
-app.use(
-  cors({
-    origin: ['http://localhost:5000', 'https://flipmart-api.onrender.com', '*'],
-  })
-)
+// Enable CORS
+app.use(cors())
+app.options('*', cors())
+
 if (process.env.NODE_ENV === 'development') {
   app.use(morgan('dev'))
 }
