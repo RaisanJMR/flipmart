@@ -11,7 +11,7 @@ Tech Stack
 - Node - server
 - styling - react-bootstrap
 
- > watch live at [flipbay.herokuapp.com](https://flipbay.herokuapp.com/)
+ > watch live at [https://flipmart.onrender.com](https://flipmart.onrender.com)
  
 ``` Sample User Logins
 
@@ -60,9 +60,9 @@ jane@example.com (Customer)
  ```
 NODE_ENV = development
 PORT = 5000
-MONGO_URI = your mongodb uri
+MONGO_URI = <your mongodb uri>
 JWT_SECRET = 'abc123'
-PAYPAL_CLIENT_ID = your paypal client id
+PAYPAL_CLIENT_ID = <your paypal client id>
  ```
 ### 2. install dependencies
  install npm packages needed for your project for frontend & backend
@@ -83,16 +83,8 @@ npm run dev
 # Run backend only
 npm run server
 ```
-### 3. deploy
- run this project on your local machine. ```heroku``` prefered
 
-```
-# Create frontend prod build
-cd frontend
-npm run build
-```
-
-### 4. seeder script for mongoDB
+### 4. Seed script for mongoDB
  populate your database with users and products
 
 ```
@@ -112,9 +104,8 @@ sb-q475kk7727209@personal.example.com
 # password
 (X#i5V7f63lOj)
 ```
-### 6. Backend api url
-[https://flipmart-api.onrender.com/](https://flipmart-api.onrender.com/)
-## License
+
+### License
 ---
 The MIT License
 
