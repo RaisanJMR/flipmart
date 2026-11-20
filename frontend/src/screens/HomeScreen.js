@@ -1,13 +1,13 @@
 import React, { useEffect } from 'react'
 import Meta from '../components/Meta'
 import { useDispatch, useSelector } from 'react-redux'
-import { Col, Row } from 'react-bootstrap'
-import Product from '../components/Product'
+import Product, { ProductSkeleton } from '../components/Product'
 import { listProducts } from '../actions/productActions'
-import Loader from '../components/Loader'
 import Message from '../components/Message'
 import Paginate from '../components/Paginate'
 import ProductCarousel from '../components/ProductCarousel'
+import EmptyState from '../components/ui/EmptyState'
+import Button from '../components/ui/Button'
 
 const HomeScreen = ({ match }) => {
   const keyword = match.params.keyword
@@ -22,33 +22,73 @@ const HomeScreen = ({ match }) => {
   useEffect(() => {
     dispatch(listProducts(keyword, pageNumber))
   }, [dispatch, keyword, pageNumber])
-  // const products = []
 
   return (
     <>
-    <Meta/>
-      {!keyword && <ProductCarousel />}
-      <h1>Latest Products</h1>
-      {loading ? (
-        <Loader />
-      ) : error ? (
-        <Message variant='danger'>{error}</Message>
-      ) : (
+      <Meta />
+      {!keyword && (
         <>
-          <Row>
-            {products.map((product) => (
-              <Col key={product._id} sm={12} md={6} lg={4} xl={3}>
-                <Product product={product} />
-              </Col>
-            ))}
-          </Row>
-          <Paginate
-            pages={pages}
-            page={page}
-            keyword={keyword ? keyword : ''}
-          />
+          <h1 className='visually-hidden'>Flipbay store</h1>
+          <ProductCarousel />
         </>
       )}
+
+      <section aria-labelledby='products-heading'>
+        <div className='section__header'>
+          <div className='stack stack--sm'>
+            <p className='eyebrow'>{keyword ? 'Search results' : 'Catalog'}</p>
+            {keyword ? (
+              <h1 id='products-heading'>Results for “{keyword}”</h1>
+            ) : (
+              <h2 id='products-heading' className='title-lg'>
+                Latest products
+              </h2>
+            )}
+          </div>
+          {keyword && (
+            <Button to='/' variant='ghost' size='sm'>
+              <i className='fas fa-times' aria-hidden='true' />
+              Clear search
+            </Button>
+          )}
+        </div>
+
+        {loading ? (
+          <div className='product-grid' role='status' aria-label='Loading products'>
+            {[...Array(8).keys()].map((x) => (
+              <ProductSkeleton key={x} />
+            ))}
+          </div>
+        ) : error ? (
+          <Message variant='danger'>{error}</Message>
+        ) : products.length === 0 ? (
+          <EmptyState
+            icon='fa-search'
+            title='No products found'
+            description={
+              keyword
+                ? `We couldn’t find anything matching “${keyword}”. Try a different search term.`
+                : 'There are no products to show yet.'
+            }
+            action={
+              keyword && (
+                <Button to='/' variant='secondary'>
+                  Browse all products
+                </Button>
+              )
+            }
+          />
+        ) : (
+          <>
+            <div className='product-grid'>
+              {products.map((product) => (
+                <Product key={product._id} product={product} />
+              ))}
+            </div>
+            <Paginate pages={pages} page={page} keyword={keyword ? keyword : ''} />
+          </>
+        )}
+      </section>
     </>
   )
 }

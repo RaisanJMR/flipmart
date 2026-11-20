@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
-import { Form, Button } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import FormContainer from '../components/FormContainer'
 import CheckoutSteps from '../components/CheckoutSteps'
 import { saveShippingAddress } from '../actions/cartActions'
+import Button from '../components/ui/Button'
+import { TextField } from '../components/ui/Field'
 
 const ShippingScreen = ({ history }) => {
   const cart = useSelector((state) => state.cart)
@@ -20,56 +21,62 @@ const ShippingScreen = ({ history }) => {
     history.push('/payment')
   }
   return (
-    <FormContainer>
-      <CheckoutSteps step1 step2/>
-      <h4>Shipping Screen</h4>
-      <Form onSubmit={submitHandler}>
-        <Form.Group controlId='address' className='my-3'>
-          <Form.Label>Address </Form.Label>
-          <Form.Control
+    <FormContainer wide>
+      <CheckoutSteps step1 step2 />
+      <div className='card card--padded'>
+        <h1 className='card__title'>Shipping address</h1>
+        <p className='card__subtitle'>Where should we deliver your order?</p>
+        <form onSubmit={submitHandler} className='form-grid'>
+          <TextField
+            id='address'
+            label='Street address'
+            className='form-grid__full'
             type='text'
-            placeholder='Enter your address'
-            value={address}
+            autoComplete='street-address'
+            placeholder='123 Main Street'
+            value={address || ''}
             required
             onChange={(e) => setAddress(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
-
-        <Form.Group controlId='city' className='my-3'>
-          <Form.Label>City </Form.Label>
-          <Form.Control
+          />
+          <TextField
+            id='city'
+            label='City'
             type='text'
-            placeholder='Enter your city'
-            value={city}
+            autoComplete='address-level2'
+            placeholder='City'
+            value={city || ''}
             required
             onChange={(e) => setCity(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
-
-        <Form.Group controlId='postalCode' className='my-3'>
-          <Form.Label>Postal Code </Form.Label>
-          <Form.Control
+          />
+          <TextField
+            id='postalCode'
+            label='Postal code'
             type='text'
-            placeholder='Enter your postal code'
-            value={postalCode}
+            autoComplete='postal-code'
+            placeholder='Postal code'
+            value={postalCode || ''}
             required
             onChange={(e) => setPostalCode(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
-        <Form.Group controlId='country' className='my-3'>
-          <Form.Label>Country </Form.Label>
-          <Form.Control
+          />
+          <TextField
+            id='country'
+            label='Country'
+            className='form-grid__full'
             type='text'
-            placeholder='Enter country'
-            value={country}
+            autoComplete='country-name'
+            placeholder='Country'
+            value={country || ''}
             required
             onChange={(e) => setCountry(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
-        <Button type='submit' variant='primary' className='my-3'>
-          Continue
-        </Button>
-      </Form>
+          />
+          <div className='form-grid__full form-actions'>
+            <Button type='submit' variant='primary' size='lg'>
+              Continue to payment
+              <i className='fas fa-arrow-right' aria-hidden='true' />
+            </Button>
+          </div>
+        </form>
+      </div>
     </FormContainer>
   )
 }

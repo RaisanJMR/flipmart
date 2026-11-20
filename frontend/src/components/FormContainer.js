@@ -1,16 +1,10 @@
 import React from 'react'
-import { Col, Container, Row } from 'react-bootstrap'
+import classNames from '../utils/classNames'
 
-const FormContainer = ({ children }) => {
-  return (
-    <Container>
-      <Row className='justify-content-md-center'>
-        <Col xs={12} md={6}>
-          {children}
-        </Col>
-      </Row>
-    </Container>
-  )
-}
+const FormContainer = ({ children, wide = false, auth = false }) => (
+  <div className={classNames('form-shell', wide && 'form-shell--wide', auth && 'form-shell--auth')}>
+    {children}
+  </div>
+)
 
 export default FormContainer

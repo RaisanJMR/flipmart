@@ -1,0 +1,58 @@
+@use '../abstracts' as *;
+
+.alert {
+  --alert-fg: var(--color-info);
+  --alert-bg: var(--color-info-soft);
+  --alert-border: var(--color-info-border);
+
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border: 1px solid var(--alert-border);
+  border-radius: var(--radius-md);
+  background: var(--alert-bg);
+  color: var(--color-text);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+
+  & + & {
+    margin-top: var(--space-3);
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: var(--alert-fg);
+  }
+
+  &__content {
+    min-width: 0;
+
+    a {
+      font-weight: var(--weight-medium);
+    }
+  }
+
+  &--success {
+    --alert-fg: var(--color-success);
+    --alert-bg: var(--color-success-soft);
+    --alert-border: var(--color-success-border);
+  }
+
+  &--warning {
+    --alert-fg: var(--color-warning);
+    --alert-bg: var(--color-warning-soft);
+    --alert-border: var(--color-warning-border);
+  }
+
+  &--danger {
+    --alert-fg: var(--color-danger);
+    --alert-bg: var(--color-danger-soft);
+    --alert-border: var(--color-danger-border);
+  }
+}
+
+.stack > .alert + .alert {
+  margin-top: 0;
+}

@@ -1,7 +1,6 @@
 import React, { useState } from 'react'
-import { Form, Button } from 'react-bootstrap'
 
-const SearchBox = ({ history }) => {
+const SearchBox = ({ history, id = 'site-search' }) => {
   const [keyword, setKeyword] = useState('')
   const submitHandler = (e) => {
     e.preventDefault()
@@ -12,22 +11,29 @@ const SearchBox = ({ history }) => {
     }
   }
   return (
-    <Form onSubmit={submitHandler} className='d-flex mt-sm-4'>
-      <Form.Control
-        type='text'
-        name='q'
-        onChange={(e) => setKeyword(e.target.value)}
-        placeholder='Search Products...'
-        className='mr-sm-2 ml-sm-5'
-      ></Form.Control>
-      <Button
-        type='submit'
-        variant='outline-success'
-        className='p-2 d-flex align-items-center justify-content-center'
-      >
-        <i className='fa fa-search mr-2' aria-hidden='true'></i> Search
-      </Button>
-    </Form>
+    <form onSubmit={submitHandler} role='search' className='w-full'>
+      <label htmlFor={id} className='visually-hidden'>
+        Search products
+      </label>
+      <div className='input-group input-group--with-addon'>
+        <i className='fas fa-search input-group__icon' aria-hidden='true' />
+        <input
+          id={id}
+          type='search'
+          name='q'
+          className='input'
+          value={keyword}
+          onChange={(e) => setKeyword(e.target.value)}
+          placeholder='Search products…'
+          autoComplete='off'
+        />
+        <span className='input-group__addon'>
+          <button type='submit' className='button button--secondary button--sm'>
+            Search
+          </button>
+        </span>
+      </div>
+    </form>
   )
 }
 

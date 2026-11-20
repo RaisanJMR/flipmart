@@ -1,9 +1,13 @@
-import React, { useEffect } from 'react'
-import { LinkContainer } from 'react-router-bootstrap'
-import { Button, Table, Row, Col } from 'react-bootstrap'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Message from '../components/Message'
 import Loader from '../components/Loader'
+import AdminNav from '../components/AdminNav'
+import PageHeader from '../components/ui/PageHeader'
+import Button from '../components/ui/Button'
+import Badge from '../components/ui/Badge'
+import EmptyState from '../components/ui/EmptyState'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
 import {
   listProducts,
   deleteProduct,
@@ -14,6 +18,8 @@ import { PRODUCT_CREATE_RESET } from '../constants/productConstants'
 
 function ProductListScreen({ history, match }) {
   const pageNumber = match.params.pageNumber || 1
+  // { type: 'create' } | { type: 'delete', product }
+  const [pendingAction, setPendingAction] = useState(null)
 
   const dispatch = useDispatch()
 
@@ -50,82 +56,134 @@ function ProductListScreen({ history, match }) {
     }
   }, [dispatch, history, userInfo, successDelete, successCreate, createdProduct, pageNumber])
 
-  const createProductHandler = () => {
-    if (window.confirm('Are you sure to create a new product')) {
-      //  CREATE PRODUCT
+  const confirmAction = () => {
+    if (pendingAction.type === 'create') {
       dispatch(createProduct())
+    } else {
+      dispatch(deleteProduct(pendingAction.product._id))
     }
+    setPendingAction(null)
   }
-  const deleteHandler = (id) => {
-    if (window.confirm('Are you sure to delete your product')) {
-      dispatch(deleteProduct(id))
-    }
-  }
+
+  const isDelete = pendingAction && pendingAction.type === 'delete'
 
   return (
     <>
-      <Row className='align-items-center'>
-        <Col>
-          <h1>Products</h1>
-        </Col>
-        <Col className='text-right'>
-          <Button className='my-3' onClick={createProductHandler}>
-            <i className='fas fa-plus'></i> Create Product
+      <PageHeader
+        eyebrow='Admin'
+        title='Products'
+        description='Manage your catalog, pricing and inventory.'
+        actions={
+          <Button
+            variant='primary'
+            loading={loadingCreate}
+            onClick={() => setPendingAction({ type: 'create' })}
+          >
+            <i className='fas fa-plus' aria-hidden='true' />
+            New product
           </Button>
-        </Col>
-      </Row>
-      {loadingDelete && <Loader />}
-      {errorDelete && <Message variant='danger'>{errorDelete}</Message>}
-      {loadingCreate && <Loader />}
-      {errorCreate && <Message variant='danger'>{errorCreate}</Message>}
-      {loading ? (
-        <Loader />
-      ) : error ? (
-        <Message variant='danger'>{error}</Message>
-      ) : (
-        <>
-        <Table striped bordered hover responsive className='table-sm'>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>NAME</th>
-              <th>PRICE</th>
-              <th>CATEGORY</th>
-              <th>BRAND</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {products.map((product) => (
-              <tr key={product._id}>
-                <td>{product._id}</td>
-                <td>{product.name}</td>
-                <td>${product.price}</td>
-                <td>{product.category}</td>
-                <td>{product.brand}</td>
-                <td>
-                  <LinkContainer to={`/admin/product/${product._id}/edit`}>
-                    <Button variant='light' className='btn-sm'>
-                      <i className='fas fa-edit'></i>
-                    </Button>
-                  </LinkContainer>
-                  <Button
-                    variant='danger'
-                    className='btn-sm'
-                    onClick={() => {
-                      deleteHandler(product._id)
-                    }}
-                  >
-                    <i className='fas fa-trash'></i>
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-        <Paginate pages={pages} page={page} isAdmin={true}/>
-        </>
-      )}
+        }
+      />
+      <AdminNav />
+      <div className='stack'>
+        {loadingDelete && <Loader inline label='Deleting product…' />}
+        {errorDelete && <Message variant='danger'>{errorDelete}</Message>}
+        {errorCreate && <Message variant='danger'>{errorCreate}</Message>}
+        {loading ? (
+          <Loader />
+        ) : error ? (
+          <Message variant='danger'>{error}</Message>
+        ) : products.length === 0 ? (
+          <EmptyState
+            icon='fa-box-open'
+            title='No products yet'
+            description='Create your first product to start selling.'
+          />
+        ) : (
+          <div>
+            <div className='table-wrap' tabIndex={0} role='region' aria-label='Products'>
+              <table className='data-table'>
+                <thead>
+                  <tr>
+                    <th scope='col'>Product</th>
+                    <th scope='col' className='data-table__numeric'>Price</th>
+                    <th scope='col'>Category</th>
+                    <th scope='col'>Brand</th>
+                    <th scope='col'>Stock</th>
+                    <th scope='col'>
+                      <span className='visually-hidden'>Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {products.map((product) => (
+                    <tr key={product._id}>
+                      <td>
+                        <span className='table-product'>
+                          <img src={product.image} alt='' />
+                          <span className='data-table__primary' title={product.name}>
+                            {product.name}
+                          </span>
+                        </span>
+                      </td>
+                      <td className='data-table__numeric'>${product.price}</td>
+                      <td>{product.category}</td>
+                      <td>{product.brand}</td>
+                      <td>
+                        {product.countInStock > 0 ? (
+                          <Badge tone='success'>{product.countInStock} in stock</Badge>
+                        ) : (
+                          <Badge tone='danger'>Out of stock</Badge>
+                        )}
+                      </td>
+                      <td className='data-table__actions'>
+                        <span className='cluster'>
+                          <Button
+                            to={`/admin/product/${product._id}/edit`}
+                            variant='ghost'
+                            size='sm'
+                            iconOnly
+                            aria-label={`Edit ${product.name}`}
+                            data-tooltip='Edit'
+                          >
+                            <i className='fas fa-pen' aria-hidden='true' />
+                          </Button>
+                          <Button
+                            variant='danger-ghost'
+                            size='sm'
+                            iconOnly
+                            aria-label={`Delete ${product.name}`}
+                            data-tooltip='Delete'
+                            onClick={() => setPendingAction({ type: 'delete', product })}
+                          >
+                            <i className='fas fa-trash-alt' aria-hidden='true' />
+                          </Button>
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <Paginate pages={pages} page={page} isAdmin={true} />
+          </div>
+        )}
+      </div>
+
+      <ConfirmDialog
+        open={Boolean(pendingAction)}
+        tone={isDelete ? 'danger' : 'primary'}
+        icon={isDelete ? undefined : 'fa-plus'}
+        title={isDelete ? 'Delete product?' : 'Create a new product?'}
+        description={
+          isDelete
+            ? `“${pendingAction.product.name}” will be permanently removed from the catalog.`
+            : 'A sample product will be created and opened for editing.'
+        }
+        confirmLabel={isDelete ? 'Delete product' : 'Create product'}
+        onConfirm={confirmAction}
+        onCancel={() => setPendingAction(null)}
+      />
     </>
   )
 }

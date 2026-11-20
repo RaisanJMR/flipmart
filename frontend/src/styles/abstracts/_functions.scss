@@ -1,0 +1,21 @@
+@use 'sass:math';
+@use 'sass:map';
+@use 'variables' as *;
+
+@function rem($px, $base: 16px) {
+  @return math.div($px, $base) * 1rem;
+}
+
+@function z($layer) {
+  @if not map.has-key($z-layers, $layer) {
+    @error 'Unknown z-index layer `#{$layer}`.';
+  }
+  @return map.get($z-layers, $layer);
+}
+
+@function bp($name) {
+  @if not map.has-key($breakpoints, $name) {
+    @error 'Unknown breakpoint `#{$name}`.';
+  }
+  @return map.get($breakpoints, $name);
+}

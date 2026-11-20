@@ -1,15 +1,15 @@
 import React, { useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { Row, Col, ListGroup, Image, Card, Button } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import Message from '../components/Message'
 import CheckoutSteps from '../components/CheckoutSteps'
 import { createOrder } from '../actions/orderActions'
+import Button from '../components/ui/Button'
+import EmptyState from '../components/ui/EmptyState'
+import { OrderItems, OrderTotals, formatAddress } from '../components/OrderSummary'
 
 const PlaceOrderScreen = ({ history }) => {
   const dispatch = useDispatch()
   const cart = useSelector((state) => state.cart)
-  // console.log("cart",cart)
   // Calculate Price
   const addDecimals = (num) => {
     return (Math.round(num * 100) / 100).toFixed(2)
@@ -26,7 +26,7 @@ const PlaceOrderScreen = ({ history }) => {
   ).toFixed(2)
   const orderCreate = useSelector((state) => state.orderCreate)
 
-  const { order, success, error } = orderCreate
+  const { order, success, error, loading } = orderCreate
 
   useEffect(() => {
     if (success) {
@@ -50,103 +50,98 @@ const PlaceOrderScreen = ({ history }) => {
   return (
     <>
       <CheckoutSteps step1 step2 step3 step4 />
-      <Row>
-        <Col md={8}>
-          <ListGroup variant='flush'>
-            <ListGroup.Item>
-              <h2>Shipping</h2>
-              <p>
-                <strong>Address: </strong>
-                {cart.shippingAddress.address}, {cart.shippingAddress.address}
-                {cart.shippingAddress.postalCode},{' '}
-                {cart.shippingAddress.country}
-              </p>
-            </ListGroup.Item>
-            <ListGroup.Item>
-              <h2>Payment Method</h2>
-              <strong>Method: </strong>
-              {cart.paymentMethod}
-            </ListGroup.Item>
-            <ListGroup.Item>
-              <h2>Order Items</h2>
-              {cart.cartItems.length === 0 ? (
-                <Message>Your cart is empty</Message>
-              ) : (
-                <ListGroup variant='flush'>
-                  {cart.cartItems.map((item, index) => (
-                    <ListGroup.Item key={index}>
-                      <Row>
-                        <Col md={1}>
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            fluid
-                            rounded
-                          />
-                        </Col>
-                        <Col>
-                          <Link to={`/product/${item.product}`}>
-                            {item.name}
-                          </Link>
-                        </Col>
-                        <Col md={4}>
-                          {item.qty} x ${item.price} = ${item.qty * item.price}
-                        </Col>
-                      </Row>
-                    </ListGroup.Item>
-                  ))}
-                </ListGroup>
-              )}
-            </ListGroup.Item>
-          </ListGroup>
-        </Col>
-        <Col md={4}>
-          <Card>
-            <ListGroup variant='flush'>
-              <ListGroup.Item>
-                <h2>Order Summary</h2>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Row>
-                  <Col>Items</Col>
-                  <Col>${cart.itemsPrice}</Col>
-                </Row>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Row>
-                  <Col>Shipping</Col>
-                  <Col>${cart.shippingPrice}</Col>
-                </Row>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Row>
-                  <Col>Tax</Col>
-                  <Col>${cart.taxPrice}</Col>
-                </Row>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Row>
-                  <Col>Total</Col>
-                  <Col>${cart.totalPrice}</Col>
-                </Row>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                {error && <Message variant='danger'>{error}</Message>}
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Button
-                  type='button'
-                  className='btn-block'
-                  disabled={cart.cartItems === 0}
-                  onClick={placeOrderHandler}
-                >
-                  Place Order
-                </Button>
-              </ListGroup.Item>
-            </ListGroup>
-          </Card>
-        </Col>
-      </Row>
+      <div className='page-header'>
+        <div className='page-header__titles'>
+          <h1>Review your order</h1>
+          <p className='page-header__description'>
+            Check the details below before placing your order.
+          </p>
+        </div>
+      </div>
+      <div className='split-layout'>
+        <div className='stack stack--lg'>
+          <section className='card' aria-labelledby='shipping-heading'>
+            <div className='card__header'>
+              <h2 id='shipping-heading'>Shipping</h2>
+              <Button to='/shipping' variant='ghost' size='sm'>
+                Edit
+              </Button>
+            </div>
+            <div className='card__body'>
+              <dl className='detail-list'>
+                <div className='detail-list__item'>
+                  <dt>Address</dt>
+                  <dd>{formatAddress(cart.shippingAddress)}</dd>
+                </div>
+              </dl>
+            </div>
+          </section>
+
+          <section className='card' aria-labelledby='payment-heading'>
+            <div className='card__header'>
+              <h2 id='payment-heading'>Payment</h2>
+              <Button to='/payment' variant='ghost' size='sm'>
+                Edit
+              </Button>
+            </div>
+            <div className='card__body'>
+              <dl className='detail-list'>
+                <div className='detail-list__item'>
+                  <dt>Method</dt>
+                  <dd>{cart.paymentMethod}</dd>
+                </div>
+              </dl>
+            </div>
+          </section>
+
+          <section className='card' aria-labelledby='items-heading'>
+            <div className='card__header'>
+              <h2 id='items-heading'>Items</h2>
+            </div>
+            {cart.cartItems.length === 0 ? (
+              <div className='card__body'>
+                <EmptyState
+                  compact
+                  icon='fa-shopping-bag'
+                  title='Your cart is empty'
+                  action={
+                    <Button to='/' variant='secondary'>
+                      Browse products
+                    </Button>
+                  }
+                />
+              </div>
+            ) : (
+              <OrderItems items={cart.cartItems} />
+            )}
+          </section>
+        </div>
+
+        <aside className='split-layout__aside card' aria-labelledby='summary-heading'>
+          <div className='card__header'>
+            <h2 id='summary-heading'>Order summary</h2>
+          </div>
+          <div className='card__body stack'>
+            <OrderTotals
+              itemsPrice={cart.itemsPrice}
+              shippingPrice={cart.shippingPrice}
+              taxPrice={cart.taxPrice}
+              totalPrice={cart.totalPrice}
+            />
+            {error && <Message variant='danger'>{error}</Message>}
+            <Button
+              variant='primary'
+              size='lg'
+              block
+              loading={loading}
+              disabled={cart.cartItems.length === 0}
+              onClick={placeOrderHandler}
+            >
+              Place order
+            </Button>
+          </div>
+        </aside>
+      </div>
     </>
   )
 }

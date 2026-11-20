@@ -1,23 +1,19 @@
 import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import { Form, Button, Row, Col } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import Message from '../components/Message'
-import Loader from '../components/Loader'
 import { login } from '../actions/userActions'
 import FormContainer from '../components/FormContainer'
+import Button from '../components/ui/Button'
+import { TextField } from '../components/ui/Field'
 
 const LoginScreen = ({ location, history }) => {
-  // console.log("location->",location)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const dispatch = useDispatch()
   const userLogin = useSelector((state) => state.userLogin)
-  // console.log(userLogin);
   const { loading, error, userInfo } = userLogin
-  console.log(userInfo)
   const redirect = location.search ? location.search.split('=')[1] : '/'
-  // console.log('redirect->',redirect)
   useEffect(() => {
     if (userInfo) {
       history.push(redirect)
@@ -28,44 +24,44 @@ const LoginScreen = ({ location, history }) => {
    dispatch(login(email,password))
   }
   return (
-    <FormContainer>
-      <h1>Sign In</h1>
-      {error && <Message variant='danger'>{error}</Message>}
-      {loading && <Loader/>}
-      <Form onSubmit={submitHandler}>
-        <Form.Group controlId='email'>
-          <Form.Label>Email Address</Form.Label>
-          <Form.Control
+    <FormContainer auth>
+      <div className='card card--padded'>
+        <h1 className='card__title'>Welcome back</h1>
+        <p className='card__subtitle'>Sign in to your Flipbay account to continue.</p>
+
+        <form onSubmit={submitHandler} className='stack'>
+          {error && <Message variant='danger'>{error}</Message>}
+          <TextField
+            id='email'
+            label='Email address'
             type='email'
-            placeholder='Enter email'
+            autoComplete='email'
+            placeholder='you@example.com'
             value={email}
+            required
             onChange={(e) => setEmail(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
-
-        <Form.Group controlId='password'>
-          <Form.Label>Password</Form.Label>
-          <Form.Control
+          />
+          <TextField
+            id='password'
+            label='Password'
             type='password'
-            placeholder='Enter password'
+            autoComplete='current-password'
+            placeholder='••••••••'
             value={password}
+            required
             onChange={(e) => setPassword(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
-
-        <Button type='submit' variant='primary' className='my-2'>
-          Sign In
-        </Button>
-      </Form>
-      <Row className='py-3'>
-        <Col>
-          New Customer?{' '}
-          <Link to={redirect ? `/register?redirect=${redirect}` : '/register'}>
-            {' '}
-            Register{' '}
-          </Link>
-        </Col>
-      </Row>
+          />
+          <Button type='submit' variant='primary' size='lg' block loading={loading}>
+            Sign in
+          </Button>
+        </form>
+      </div>
+      <p className='form-footnote'>
+        New to Flipbay?{' '}
+        <Link to={redirect ? `/register?redirect=${redirect}` : '/register'}>
+          Create an account
+        </Link>
+      </p>
     </FormContainer>
   )
 }

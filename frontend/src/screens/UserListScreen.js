@@ -1,16 +1,20 @@
-import React, { useEffect } from 'react'
-import { LinkContainer } from 'react-router-bootstrap'
-import { Button, Table } from 'react-bootstrap'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import Message from '../components/Message'
 import Loader from '../components/Loader'
+import AdminNav from '../components/AdminNav'
+import PageHeader from '../components/ui/PageHeader'
+import Button from '../components/ui/Button'
+import Badge from '../components/ui/Badge'
+import EmptyState from '../components/ui/EmptyState'
+import ConfirmDialog from '../components/ui/ConfirmDialog'
 import { listUsers, deleteUsers } from '../actions/userActions'
 
 function UserListScreen({ history }) {
   const dispatch = useDispatch()
+  const [pendingDelete, setPendingDelete] = useState(null)
   const userList = useSelector((state) => state.userList)
   const { loading, error, users } = userList
-  console.log('users from user list screen',users)
   const userLogin = useSelector((state) => state.userLogin)
   const { userInfo } = userLogin
   const userDelete = useSelector((state) => state.userDelete)
@@ -24,66 +28,105 @@ function UserListScreen({ history }) {
     }
   }, [dispatch, history, userInfo, successDelete])
 
-  const deleteHandler = (id) => {
-    if (window.confirm('Are you sure')) {
-      dispatch(deleteUsers(id))
-    }
+  const confirmDelete = () => {
+    dispatch(deleteUsers(pendingDelete._id))
+    setPendingDelete(null)
   }
 
   return (
     <>
-      <h1>Users</h1>
+      <PageHeader
+        eyebrow='Admin'
+        title='Users'
+        description='View customer accounts and manage admin access.'
+      />
+      <AdminNav />
       {loading ? (
         <Loader />
       ) : error ? (
         <Message variant='danger'>{error}</Message>
+      ) : users.length === 0 ? (
+        <EmptyState icon='fa-users' title='No users yet' />
       ) : (
-        <Table striped bordered hover responsive className='table-sm'>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>NAME</th>
-              <th>EMAIL</th>
-              <th>ADMIN</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {users.map((user) => (
-              <tr key={user._id}>
-                <td>{user._id}</td>
-                <td>{user.name}</td>
-                <td>
-                  <a href={`mailto:${user.email}`}>{user.email}</a>
-                </td>
-                <td>
-                  {user.isAdmin ? (
-                    <i className='fas fa-check' style={{ color: 'green' }}></i>
-                  ) : (
-                    <i className='fas fa-times' style={{ color: 'red' }}></i>
-                  )}
-                </td>
-                <td>
-                  <LinkContainer to={`/admin/user/${user._id}/edit`}>
-                    <Button variant='light' className='btn-sm'>
-                      <i className='fas fa-edit'></i>
-                    </Button>
-                  </LinkContainer>
-                  <Button
-                    variant='danger'
-                    className='btn-sm'
-                    onClick={() => {
-                      deleteHandler(user._id)
-                    }}
-                  >
-                    <i className='fas fa-trash'></i>
-                  </Button>
-                </td>
+        <div className='table-wrap' tabIndex={0} role='region' aria-label='Users'>
+          <table className='data-table'>
+            <thead>
+              <tr>
+                <th scope='col'>Name</th>
+                <th scope='col'>Email</th>
+                <th scope='col'>Role</th>
+                <th scope='col'>ID</th>
+                <th scope='col'>
+                  <span className='visually-hidden'>Actions</span>
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </Table>
+            </thead>
+            <tbody>
+              {users.map((user) => (
+                <tr key={user._id}>
+                  <td>
+                    <span className='cluster'>
+                      <span className='avatar' aria-hidden='true'>
+                        {user.name.charAt(0)}
+                      </span>
+                      <span className='data-table__primary'>{user.name}</span>
+                    </span>
+                  </td>
+                  <td>
+                    <a href={`mailto:${user.email}`}>{user.email}</a>
+                  </td>
+                  <td>
+                    {user.isAdmin ? (
+                      <Badge tone='primary'>Admin</Badge>
+                    ) : (
+                      <Badge>Customer</Badge>
+                    )}
+                  </td>
+                  <td className='data-table__id'>{user._id}</td>
+                  <td className='data-table__actions'>
+                    <span className='cluster'>
+                      <Button
+                        to={`/admin/user/${user._id}/edit`}
+                        variant='ghost'
+                        size='sm'
+                        iconOnly
+                        aria-label={`Edit ${user.name}`}
+                        data-tooltip='Edit'
+                      >
+                        <i className='fas fa-pen' aria-hidden='true' />
+                      </Button>
+                      <Button
+                        variant='danger-ghost'
+                        size='sm'
+                        iconOnly
+                        aria-label={`Delete ${user.name}`}
+                        data-tooltip='Delete'
+                        onClick={() => setPendingDelete(user)}
+                      >
+                        <i className='fas fa-trash-alt' aria-hidden='true' />
+                      </Button>
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
+
+      <ConfirmDialog
+        open={Boolean(pendingDelete)}
+        tone='danger'
+        title='Delete user?'
+        description={
+          pendingDelete
+            ? `${pendingDelete.name} (${pendingDelete.email}) will be permanently removed. This can’t be undone.`
+            : ''
+        }
+        confirmLabel='Delete user'
+        onConfirm={confirmDelete}
+        onCancel={() => setPendingDelete(null)}
+      />
     </>
   )
 }

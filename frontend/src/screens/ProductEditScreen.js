@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { Form, Button } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import Message from '../components/Message'
 import Loader from '../components/Loader'
 import FormContainer from '../components/FormContainer'
+import BackLink from '../components/ui/BackLink'
+import Button from '../components/ui/Button'
+import { Field, TextField, TextAreaField } from '../components/ui/Field'
 import { listProductDetails, updateProduct } from '../actions/productActions'
 import { PRODUCT_UPDATE_RESET } from '../constants/productConstants'
 import axios from 'axios'
@@ -20,6 +21,8 @@ const ProductEditScreen = ({ match, history }) => {
   const [countInStock, setCountInStock] = useState(0)
   const [description, setDescription] = useState('')
   const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState(null)
+  const [fileName, setFileName] = useState('')
 
   const dispatch = useDispatch()
 
@@ -36,7 +39,7 @@ const ProductEditScreen = ({ match, history }) => {
   useEffect(() => {
     if (successUpdate) {
       dispatch({ type: PRODUCT_UPDATE_RESET })
-      history.push('/admin/produclist')
+      history.push('/admin/productlist')
     } else {
       if (!product.name || product._id !== productId) {
         dispatch(listProductDetails(productId))
@@ -54,6 +57,9 @@ const ProductEditScreen = ({ match, history }) => {
 
   const uploadFileHandler = async (e) => {
     const file = e.target.files[0]
+    if (!file) return
+    setFileName(file.name)
+    setUploadError(null)
     const formData = new FormData()
     formData.append('image', file)
     setUploading(true)
@@ -68,13 +74,13 @@ const ProductEditScreen = ({ match, history }) => {
       setUploading(false)
     } catch (err) {
       console.error(err)
+      setUploadError('Upload failed. Please try another image.')
       setUploading(false)
     }
   }
 
   const submitHandler = (e) => {
     e.preventDefault()
-    // UPDATE PRODUCT
     dispatch(
       updateProduct({
         _id: productId,
@@ -90,105 +96,131 @@ const ProductEditScreen = ({ match, history }) => {
   }
 
   return (
-    <>
-      <Link to='/admin/productlist' className='btn btn-light my-3'>
-        Go Back
-      </Link>
-      <FormContainer>
-        <h1>Edit Product</h1>
-        {loadingUpdate && <Loader />}
-        {errorUpdate && <Message variant='danger'>{errorUpdate}</Message>}
+    <FormContainer wide>
+      <BackLink to='/admin/productlist'>Back to products</BackLink>
+      <div className='card card--padded'>
+        <p className='eyebrow'>Admin</p>
+        <h1 className='card__title'>Edit product</h1>
+        <p className='card__subtitle'>Update how this product appears in your store.</p>
         {loading ? (
           <Loader />
         ) : error ? (
           <Message variant='danger'>{error}</Message>
         ) : (
-          <Form onSubmit={submitHandler}>
-            <Form.Group controlId='name' className='my-3'>
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                type='name'
-                placeholder='Enter name'
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
+          <form onSubmit={submitHandler} className='form-grid'>
+            {errorUpdate && (
+              <div className='form-grid__full'>
+                <Message variant='danger'>{errorUpdate}</Message>
+              </div>
+            )}
+            <TextField
+              id='name'
+              label='Name'
+              className='form-grid__full'
+              type='text'
+              placeholder='Product name'
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <TextField
+              id='price'
+              label='Price (USD)'
+              type='number'
+              min='0'
+              step='0.01'
+              inputMode='decimal'
+              placeholder='0.00'
+              value={price}
+              onChange={(e) => setPrice(e.target.value)}
+            />
+            <TextField
+              id='countInStock'
+              label='Stock'
+              type='number'
+              min='0'
+              step='1'
+              inputMode='numeric'
+              placeholder='Units in stock'
+              value={countInStock}
+              onChange={(e) => setCountInStock(e.target.value)}
+            />
+            <TextField
+              id='brand'
+              label='Brand'
+              type='text'
+              placeholder='e.g. Apple'
+              value={brand}
+              onChange={(e) => setBrand(e.target.value)}
+            />
+            <TextField
+              id='category'
+              label='Category'
+              type='text'
+              placeholder='e.g. Electronics'
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            />
 
-            <Form.Group controlId='price' className='my-3'>
-              <Form.Label>Price</Form.Label>
-              <Form.Control
-                type='number'
-                placeholder='Price'
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
-            <Form.Group controlId='image'>
-              <Form.Label>Image</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Enter image url'
-                value={image}
-                onChange={(e) => setImage(e.target.value)}
-              ></Form.Control>
-              <Form.File
-                className='form-control'
-                id='image-file'
-                label='Choose File'
-                custom
-                onChange={uploadFileHandler}
-              ></Form.File>
-              {uploading && <Loader />}
-            </Form.Group>
-            <Form.Group controlId='brand' className='my-3'>
-              <Form.Label>Brand</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Enter brand'
-                value={brand}
-                onChange={(e) => setBrand(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
+            <Field id='image' label='Image' className='form-grid__full'>
+              <div className='media-field'>
+                <div className='image-preview'>
+                  {image ? (
+                    <img src={image} alt='' />
+                  ) : (
+                    <i className='fas fa-image text-subtle' aria-hidden='true' />
+                  )}
+                </div>
+                <div className='stack stack--sm w-full'>
+                  <input
+                    id='image'
+                    type='text'
+                    className='input'
+                    placeholder='Image URL'
+                    value={image}
+                    onChange={(e) => setImage(e.target.value)}
+                  />
+                  <div className='file-input'>
+                    <input
+                      id='image-file'
+                      type='file'
+                      accept='image/*'
+                      className='file-input__native'
+                      onChange={uploadFileHandler}
+                    />
+                    <label htmlFor='image-file' className='button button--secondary button--sm'>
+                      <i className='fas fa-upload' aria-hidden='true' />
+                      Upload file
+                    </label>
+                    <span className='file-input__name'>{fileName || 'No file chosen'}</span>
+                  </div>
+                  {uploading && <Loader inline label='Uploading…' />}
+                  {uploadError && <Message variant='danger'>{uploadError}</Message>}
+                </div>
+              </div>
+            </Field>
 
-            <Form.Group controlId='countInStock' className='my-3'>
-              <Form.Label>countInStock</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='Items in stock'
-                value={countInStock}
-                onChange={(e) => setCountInStock(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
+            <TextAreaField
+              id='description'
+              label='Description'
+              className='form-grid__full'
+              rows={4}
+              placeholder='Describe the product'
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+            />
 
-            <Form.Group controlId='category' className='my-3'>
-              <Form.Label>category</Form.Label>
-              <Form.Control
-                type='text'
-                placeholder='product category'
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
-
-            <Form.Group controlId='description' className='my-3'>
-              <Form.Label>Description</Form.Label>
-              <Form.Control
-                // type='text'
-                as='textarea'
-                rows={3}
-                placeholder='product descritpion'
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
-
-            <Button type='submit' variant='primary' className='my-3'>
-              Update
-            </Button>
-          </Form>
+            <div className='form-grid__full form-actions'>
+              <Button to='/admin/productlist' variant='ghost'>
+                Cancel
+              </Button>
+              <Button type='submit' variant='primary' loading={loadingUpdate}>
+                Save product
+              </Button>
+            </div>
+          </form>
         )}
-      </FormContainer>
-    </>
+      </div>
+    </FormContainer>
   )
 }
 

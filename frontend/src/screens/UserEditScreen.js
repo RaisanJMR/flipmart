@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { Form, Button } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import Message from '../components/Message'
 import Loader from '../components/Loader'
 import FormContainer from '../components/FormContainer'
+import BackLink from '../components/ui/BackLink'
+import Button from '../components/ui/Button'
+import { TextField, Checkbox } from '../components/ui/Field'
 import { getUserDetails, updateUser } from '../actions/userActions'
 import { USER_UPDATE_RESET } from '../constants/userConstants'
 
@@ -48,56 +49,52 @@ const UserEditScreen = ({ match, history }) => {
   }
 
   return (
-    <>
-      <Link to='/admin/userlist' className='btn btn-light my-3'>
-        Go Back
-      </Link>
-      <FormContainer>
-        <h1>Edit User</h1>
-        {loadingUpdate && <Loader />}
-        {errorUpdate && <Message variant='danger'>{errorUpdate}</Message>}
+    <FormContainer>
+      <BackLink to='/admin/userlist'>Back to users</BackLink>
+      <div className='card card--padded'>
+        <p className='eyebrow'>Admin</p>
+        <h1 className='card__title'>Edit user</h1>
+        <p className='card__subtitle'>Update account details and permissions.</p>
         {loading ? (
           <Loader />
         ) : error ? (
           <Message variant='danger'>{error}</Message>
         ) : (
-          <Form onSubmit={submitHandler}>
-            <Form.Group controlId='name'>
-              <Form.Label>Name</Form.Label>
-              <Form.Control
-                type='name'
-                placeholder='Enter name'
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
-
-            <Form.Group controlId='email'>
-              <Form.Label>Email Address</Form.Label>
-              <Form.Control
-                type='email'
-                placeholder='Enter email'
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
-
-            <Form.Group controlId='isadmin'>
-              <Form.Check
-                type='checkbox'
-                label='Is Admin'
-                checked={isAdmin}
-                onChange={(e) => setIsAdmin(e.target.checked)}
-              ></Form.Check>
-            </Form.Group>
-
-            <Button type='submit' variant='primary'>
-              Update
-            </Button>
-          </Form>
+          <form onSubmit={submitHandler} className='stack'>
+            {errorUpdate && <Message variant='danger'>{errorUpdate}</Message>}
+            <TextField
+              id='name'
+              label='Full name'
+              type='text'
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+            />
+            <TextField
+              id='email'
+              label='Email address'
+              type='email'
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+            />
+            <Checkbox
+              id='isadmin'
+              label='Administrator'
+              description='Admins can manage users, products and orders.'
+              checked={isAdmin}
+              onChange={(e) => setIsAdmin(e.target.checked)}
+            />
+            <div className='form-actions'>
+              <Button to='/admin/userlist' variant='ghost'>
+                Cancel
+              </Button>
+              <Button type='submit' variant='primary' loading={loadingUpdate}>
+                Save changes
+              </Button>
+            </div>
+          </form>
         )}
-      </FormContainer>
-    </>
+      </div>
+    </FormContainer>
   )
 }
 

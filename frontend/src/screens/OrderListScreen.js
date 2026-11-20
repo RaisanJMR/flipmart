@@ -1,9 +1,12 @@
 import React, { useEffect } from 'react'
-import { LinkContainer } from 'react-router-bootstrap'
-import { Button, Table } from 'react-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import Message from '../components/Message'
 import Loader from '../components/Loader'
+import AdminNav from '../components/AdminNav'
+import PageHeader from '../components/ui/PageHeader'
+import Button from '../components/ui/Button'
+import EmptyState from '../components/ui/EmptyState'
+import { PaidStatus, DeliveryStatus, formatDate } from '../components/OrderStatus'
 import { listOrders } from '../actions/orderActions'
 
 function OrderListScreen({ history }) {
@@ -11,7 +14,6 @@ function OrderListScreen({ history }) {
 
   const orderList = useSelector((state) => state.orderList)
   const { loading, error, orders } = orderList
-  
 
   const userLogin = useSelector((state) => state.userLogin)
   const { userInfo } = userLogin
@@ -26,57 +28,62 @@ function OrderListScreen({ history }) {
 
   return (
     <>
-      <h1>Orders</h1>
+      <PageHeader
+        eyebrow='Admin'
+        title='Orders'
+        description='Track payments and fulfilment across all customer orders.'
+      />
+      <AdminNav />
       {loading ? (
         <Loader />
       ) : error ? (
         <Message variant='danger'>{error}</Message>
+      ) : orders.length === 0 ? (
+        <EmptyState icon='fa-receipt' title='No orders yet' />
       ) : (
-        <Table striped bordered hover responsive className='table-sm'>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>USER</th>
-              <th>DATE</th>
-              <th>TOTAL PRICE</th>
-              <th>PAID</th>
-              <th>DELIVERED</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {orders.map((order) => (
-              <tr key={order._id}>
-                <td>{order._id}</td>
-                <td>{order.user && order.user.name}</td>
-                <td>{order.createdAt.substring(0, 10)}</td>
-                <td>${order.totalPrice}</td>
-                <td>
-                  {order.isPaid ? (
-                    order.paidAt.substring(0, 10)
-                  ) : (
-                    <i className='fas fa-times' style={{ color: 'red' }}></i>
-                  )}
-                </td>
-                <td>
-                  {order.isDelivered ? (
-                    order.deliveredAt.substring(0, 10)
-                  ) : (
-                    <i className='fas fa-times' style={{ color: 'red' }}></i>
-                  )}
-                </td>
-                <td>
-                  <LinkContainer to={`/order/${order._id}`}>
-                    <Button variant='light' className='btn-sm'>
+        <div className='table-wrap' tabIndex={0} role='region' aria-label='Orders'>
+          <table className='data-table'>
+            <thead>
+              <tr>
+                <th scope='col'>Order</th>
+                <th scope='col'>Customer</th>
+                <th scope='col'>Date</th>
+                <th scope='col' className='data-table__numeric'>Total</th>
+                <th scope='col'>Payment</th>
+                <th scope='col'>Delivery</th>
+                <th scope='col'>
+                  <span className='visually-hidden'>Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {orders.map((order) => (
+                <tr key={order._id}>
+                  <td className='data-table__id' title={order._id}>
+                    #{order._id.slice(-8)}
+                  </td>
+                  <td className='data-table__primary'>{order.user && order.user.name}</td>
+                  <td>{formatDate(order.createdAt)}</td>
+                  <td className='data-table__numeric'>${order.totalPrice}</td>
+                  <td>
+                    <PaidStatus isPaid={order.isPaid} paidAt={order.paidAt} />
+                  </td>
+                  <td>
+                    <DeliveryStatus
+                      isDelivered={order.isDelivered}
+                      deliveredAt={order.deliveredAt}
+                    />
+                  </td>
+                  <td className='data-table__actions'>
+                    <Button to={`/order/${order._id}`} size='sm'>
                       Details
                     </Button>
-                  </LinkContainer>
-                
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </>
   )

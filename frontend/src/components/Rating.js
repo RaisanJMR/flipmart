@@ -1,85 +1,30 @@
 import React from 'react'
-// import PropTypes from 'prop-types'
+
+const starClass = (value, position) =>
+  value >= position
+    ? 'fas fa-star'
+    : value >= position - 0.5
+    ? 'fas fa-star-half-alt'
+    : 'far fa-star'
 
 const Rating = ({ value, text, color }) => {
+  const rounded = Math.round((Number(value) || 0) * 2) / 2
+
   return (
     <div className='rating'>
-      {/* STAR 1 */}
-      <span>
-        <i
-          style={{ color }}
-          className={
-            value >= 1
-              ? 'fas fa-star'
-              : value >= 0.5
-              ? 'fas fa-star-half-alt'
-              : 'far fa-star'
-          }
-        ></i>
+      <span
+        className='rating__stars'
+        role='img'
+        aria-label={`Rated ${rounded} out of 5`}
+        style={color ? { color } : undefined}
+      >
+        {[1, 2, 3, 4, 5].map((position) => (
+          <i key={position} className={starClass(value, position)} aria-hidden='true' />
+        ))}
       </span>
-      {/* STAR 2 */}
-      <span>
-        <i
-          style={{ color }}
-          className={
-            value >= 2
-              ? 'fas fa-star'
-              : value >= 1.5
-              ? 'fas fa-star-half-alt'
-              : 'far fa-star'
-          }
-        ></i>
-      </span>
-      {/* STAR 3 */}
-      <span>
-        <i
-          style={{ color }}
-          className={
-            value >= 3
-              ? 'fas fa-star'
-              : value >= 2.5
-              ? 'fas fa-star-half-alt'
-              : 'far fa-star'
-          }
-        ></i>
-      </span>
-      {/* STAR 4 */}
-      <span>
-        <i
-          style={{ color }}
-          className={
-            value >= 4
-              ? 'fas fa-star'
-              : value >= 3.5
-              ? 'fas fa-star-half-alt'
-              : 'far fa-star'
-          }
-        ></i>
-      </span>
-      {/* STAR 5 */}
-      <span>
-        <i
-          style={{ color }}
-          className={
-            value >= 5
-              ? 'fas fa-star'
-              : value >= 4.5
-              ? 'fas fa-star-half-alt'
-              : 'far fa-star'
-          }
-        ></i>
-      </span>
-      <span>{text && text}</span>
+      {text && <span className='rating__text'>{text}</span>}
     </div>
   )
 }
 
-Rating.defaultProps = {
-  color: '#ff7b00',
-}
-// Rating.propTypes = {
-//   value: PropTypes.number.isRequired,
-//   text: PropTypes.string.isRequired,
-//   color: PropTypes.string,
-// }
 export default Rating

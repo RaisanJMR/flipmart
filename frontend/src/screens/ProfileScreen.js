@@ -1,17 +1,16 @@
 import React, { useState, useEffect } from 'react'
-import { Button, Table, Form, Row, Col } from 'react-bootstrap'
-import {LinkContainer} from 'react-router-bootstrap'
 import { useDispatch, useSelector } from 'react-redux'
 import Message from '../components/Message'
 import Loader from '../components/Loader'
 import { getUserDetails, updateUserProfile } from '../actions/userActions'
 import { listMyOrders } from '../actions/orderActions'
-
-// import { orderDetailsReducer } from '../reducers/orderReducers'
-// import FormContainer from '../components/FormContainer'
+import PageHeader from '../components/ui/PageHeader'
+import Button from '../components/ui/Button'
+import EmptyState from '../components/ui/EmptyState'
+import { TextField } from '../components/ui/Field'
+import { PaidStatus, DeliveryStatus, formatDate } from '../components/OrderStatus'
 
 const ProfileScreen = ({ location, history }) => {
-  // console.log("location->",location)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -20,23 +19,15 @@ const ProfileScreen = ({ location, history }) => {
 
   const dispatch = useDispatch()
   const userDetails = useSelector((state) => state.userDetails)
-  // console.log(userDetails);
   const { loading, error, user } = userDetails
 
   const userLogin = useSelector((state) => state.userLogin)
-  // console.log(userLogin);
   const { userInfo } = userLogin
-  // console.log(userInfo)
 
   const userUpdateProfile = useSelector((state) => state.userUpdateProfile)
-  // console.log(userLogin);
   const { success } = userUpdateProfile
-  // console.log(userInfo)
-  
-  // const redirect = location.search ? location.search.split('=')[1] : '/'
-  // console.log('redirect->',redirect)
+
   const orderListMy = useSelector((state) => state.orderListMy)
-  // console.log(orderListMy);
   const { loading: loadingOrders, error: errorOrders, orders } = orderListMy
 
   useEffect(() => {
@@ -54,11 +45,10 @@ const ProfileScreen = ({ location, history }) => {
   }, [dispatch, history, userInfo, user])
   const submitHandler = (e) => {
     e.preventDefault()
-    //   DISPATCH REGISTER
     if (password !== confirmPassword) {
-      setMessage('Password do not match')
+      setMessage('Passwords do not match')
     } else {
-      //  DISPATCH UPDATE PROFILE
+      setMessage(null)
       dispatch(
         updateUserProfile({
           id: user._id,
@@ -71,112 +61,129 @@ const ProfileScreen = ({ location, history }) => {
   }
 
   return (
-    <Row>
-      <Col md={3}>
-        <h1>User Profile</h1>
-        {message && <Message variant='danger'>{message}</Message>}
-        {error && <Message variant='danger'>{error}</Message>}
-        {success && <Message variant='success'>Profile Updated</Message>}
-        {loading && <Loader />}
+    <>
+      <PageHeader
+        eyebrow='Account'
+        title='Your profile'
+        description='Manage your personal details and review your order history.'
+      />
+      <div className='split-layout split-layout--aside-start'>
+        <section className='card' aria-labelledby='profile-heading'>
+          <div className='card__header'>
+            <h2 id='profile-heading'>Personal details</h2>
+          </div>
+          <div className='card__body'>
+            <form onSubmit={submitHandler} className='stack'>
+              {message && <Message variant='danger'>{message}</Message>}
+              {error && <Message variant='danger'>{error}</Message>}
+              {success && <Message variant='success'>Profile updated</Message>}
+              {loading && <Loader inline />}
+              <TextField
+                id='name'
+                label='Full name'
+                type='text'
+                autoComplete='name'
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+              <TextField
+                id='email'
+                label='Email address'
+                type='email'
+                autoComplete='email'
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+              <TextField
+                id='password'
+                label='New password'
+                type='password'
+                autoComplete='new-password'
+                placeholder='Leave blank to keep current'
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+              <TextField
+                id='confirmPassword'
+                label='Confirm new password'
+                type='password'
+                autoComplete='new-password'
+                value={confirmPassword}
+                aria-invalid={message ? true : undefined}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+              <Button type='submit' variant='primary' block>
+                Save changes
+              </Button>
+            </form>
+          </div>
+        </section>
 
-        <Form onSubmit={submitHandler}>
-          <Form.Group controlId='name'>
-            <Form.Label>Name </Form.Label>
-            <Form.Control
-              type='name'
-              placeholder='Enter your name'
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            ></Form.Control>
-          </Form.Group>
-
-          <Form.Group controlId='email'>
-            <Form.Label>Email Address</Form.Label>
-            <Form.Control
-              type='email'
-              placeholder='Enter email'
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            ></Form.Control>
-          </Form.Group>
-
-          <Form.Group controlId='password'>
-            <Form.Label>Password</Form.Label>
-            <Form.Control
-              type='password'
-              placeholder='Enter password'
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            ></Form.Control>
-          </Form.Group>
-
-          <Form.Group controlId='confirmPassword'>
-            <Form.Label>Confirm Password</Form.Label>
-            <Form.Control
-              type='password'
-              placeholder='Confirm password'
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            ></Form.Control>
-          </Form.Group>
-
-          <Button type='submit' variant='primary' className='my-2'>
-            Update
-          </Button>
-        </Form>
-      </Col>
-      <Col md={9}>
-        <h2>My Odrers</h2>
-        {loadingOrders ? (
-          <Loader />
-        ) : errorOrders ? (
-          <Message variant='danger'>{errorOrders}</Message>
-        ) : (
-          <Table striped bordered hover responsive className='table-sm'>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>DATE</th>
-                <th>TOTAL</th>
-                <th>PAID</th>
-                <th>DELIVERED</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order) => (
-                <tr key={order.id}>
-                  <td>{order._id}</td>
-                  <td>{order.createdAt.substring(0, 10)}</td>
-                  <td>{order.totalPrice}</td>
-                  <td>
-                    {order.isPaid ? (
-                      order.paidAt.substring(0, 10)
-                    ) : (
-                      <i className='fas fa-times' style={{ color: 'red' }}></i>
-                    )}
-                  </td>
-                  <td>
-                    {order.isDelivered ? (
-                      order.deliveredAt.substring(0, 10)
-                    ) : (
-                      <i className='fas fa-times' style={{ color: 'red' }}></i>
-                    )}
-                  </td>
-                  <td>
-                    <LinkContainer to={`/order/${order._id}`}>
-                      <Button variant='light' className='btn btn-sm'>
-                        Details
-                      </Button>
-                    </LinkContainer>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        )}
-      </Col>
-    </Row>
+        <section aria-labelledby='orders-heading'>
+          <div className='section__header'>
+            <h2 id='orders-heading'>Order history</h2>
+          </div>
+          {loadingOrders ? (
+            <Loader />
+          ) : errorOrders ? (
+            <Message variant='danger'>{errorOrders}</Message>
+          ) : orders.length === 0 ? (
+            <EmptyState
+              icon='fa-receipt'
+              title='No orders yet'
+              description='When you place an order, it will show up here.'
+              action={
+                <Button to='/' variant='secondary'>
+                  Start shopping
+                </Button>
+              }
+            />
+          ) : (
+            <div className='table-wrap' tabIndex={0} role='region' aria-labelledby='orders-heading'>
+              <table className='data-table'>
+                <thead>
+                  <tr>
+                    <th scope='col'>Order</th>
+                    <th scope='col'>Date</th>
+                    <th scope='col' className='data-table__numeric'>Total</th>
+                    <th scope='col'>Payment</th>
+                    <th scope='col'>Delivery</th>
+                    <th scope='col'>
+                      <span className='visually-hidden'>Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {orders.map((order) => (
+                    <tr key={order._id}>
+                      <td className='data-table__id' title={order._id}>
+                        #{order._id.slice(-8)}
+                      </td>
+                      <td>{formatDate(order.createdAt)}</td>
+                      <td className='data-table__numeric'>${order.totalPrice}</td>
+                      <td>
+                        <PaidStatus isPaid={order.isPaid} paidAt={order.paidAt} />
+                      </td>
+                      <td>
+                        <DeliveryStatus
+                          isDelivered={order.isDelivered}
+                          deliveredAt={order.deliveredAt}
+                        />
+                      </td>
+                      <td className='data-table__actions'>
+                        <Button to={`/order/${order._id}`} size='sm'>
+                          Details
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      </div>
+    </>
   )
 }
 

@@ -1,0 +1,107 @@
+@use '../abstracts' as *;
+
+.table-wrap {
+  @include surface;
+  box-shadow: var(--shadow-xs);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+.data-table {
+  width: 100%;
+  min-width: rem(640px);
+  font-size: var(--text-sm);
+
+  th,
+  td {
+    padding: var(--space-3) var(--space-4);
+    text-align: left;
+    vertical-align: middle;
+    white-space: nowrap;
+
+    &:first-child {
+      padding-left: var(--space-5);
+    }
+
+    &:last-child {
+      padding-right: var(--space-5);
+    }
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    background: var(--color-surface-subtle);
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-subtle);
+    font-size: var(--text-xs);
+    font-weight: var(--weight-medium);
+    letter-spacing: 0.02em;
+  }
+
+  tbody tr {
+    @include transition(background-color);
+
+    & + tr td {
+      border-top: 1px solid var(--color-border);
+    }
+
+    &:hover {
+      background: var(--color-surface-hover);
+    }
+  }
+
+  &__numeric {
+    text-align: right !important;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__actions {
+    width: 1%;
+    text-align: right !important;
+
+    .cluster {
+      justify-content: flex-end;
+      flex-wrap: nowrap;
+      gap: var(--space-1);
+    }
+  }
+
+  &__id {
+    color: var(--color-text-subtle);
+    font-family: var(--font-mono);
+    font-size: var(--text-xs);
+  }
+
+  &__primary {
+    color: var(--color-text);
+    font-weight: var(--weight-medium);
+  }
+}
+
+.table-product {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+
+  img {
+    flex-shrink: 0;
+    width: rem(36px);
+    height: rem(36px);
+    border-radius: var(--radius-sm);
+    background: var(--color-surface-subtle);
+    object-fit: contain;
+    padding: 2px;
+    mix-blend-mode: multiply;
+  }
+
+  span {
+    @include truncate;
+    max-width: rem(280px);
+  }
+}

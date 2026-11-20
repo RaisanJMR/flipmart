@@ -12,6 +12,49 @@ dotenv.config()
 
 await connectDB()
 
+const buildOrder = ({ user, email, product, qty, paid, delivered }) => {
+  const itemsPrice = product.price * qty
+  const shippingPrice = itemsPrice > 100 ? 0 : 10
+  const taxPrice = Number((0.15 * itemsPrice).toFixed(2))
+  const totalPrice = Number((itemsPrice + shippingPrice + taxPrice).toFixed(2))
+  const now = new Date()
+
+  return {
+    user,
+    orderItems: [
+      {
+        name: product.name,
+        qty,
+        image: product.image,
+        price: product.price,
+        product: product._id,
+      },
+    ],
+    shippingAddress: {
+      address: '123 Main St',
+      city: 'Boston',
+      postalCode: '02101',
+      country: 'USA',
+    },
+    paymentMethod: 'PayPal',
+    taxPrice,
+    shippingPrice,
+    totalPrice,
+    isPaid: paid,
+    paidAt: paid ? now : undefined,
+    isDelivered: delivered,
+    deliveredAt: delivered ? now : undefined,
+    paymentResult: paid
+      ? {
+          id: 'SEED',
+          status: 'COMPLETED',
+          update_time: now.toISOString(),
+          email_address: email,
+        }
+      : undefined,
+  }
+}
+
 const importData = async () => {
   try {
     await Order.deleteMany()
@@ -26,7 +69,37 @@ const importData = async () => {
       return { ...product, user: adminUser }
     })
 
-    await Product.insertMany(sampleProducts)
+    const createdProducts = await Product.insertMany(sampleProducts)
+
+    const buyer = createdUsers[1]._id
+    const sampleOrders = [
+      buildOrder({
+        user: buyer,
+        email: 'john@example.com',
+        product: createdProducts[0],
+        qty: 2,
+        paid: true,
+        delivered: true,
+      }),
+      buildOrder({
+        user: buyer,
+        email: 'john@example.com',
+        product: createdProducts[1],
+        qty: 1,
+        paid: true,
+        delivered: false,
+      }),
+      buildOrder({
+        user: createdUsers[2]._id,
+        email: 'jane@example.com',
+        product: createdProducts[3],
+        qty: 1,
+        paid: false,
+        delivered: false,
+      }),
+    ]
+
+    await Order.insertMany(sampleOrders)
 
     console.log('Data Imported!'.green.inverse)
     process.exit()
@@ -55,4 +128,3 @@ if (process.argv[2] === '-d') {
 } else {
   importData()
 }
-// npm i redux react-redux redux-thunk redux-devtools-extension

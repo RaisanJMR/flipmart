@@ -1,0 +1,21 @@
+// Compile-time tokens. Runtime (themeable) tokens live in themes/ as CSS custom properties.
+
+$breakpoints: (
+  'sm': 640px,
+  'md': 768px,
+  'lg': 1024px,
+  'xl': 1280px,
+);
+
+$container-max: 1200px;
+$header-height: 64px;
+
+$z-layers: (
+  'base': 1,
+  'dropdown': 100,
+  'sticky': 200,
+  'overlay': 300,
+  'modal': 400,
+  'tooltip': 500,
+  'toast': 600,
+);

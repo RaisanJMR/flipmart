@@ -1,21 +1,11 @@
 import React from 'react'
-import { Spinner } from 'react-bootstrap'
-const Loader = () => {
-  return (
-    <Spinner
-      animation='border'
-      role='status'
-      style={{
-        width: '100px',
-        height: '100px',
-        margin: 'auto',
-        display: 'block',
-      }}
-    >
+import classNames from '../utils/classNames'
 
-        <span className="sr-only">Loading</span>
-    </Spinner>
-  )
-}
+const Loader = ({ label = 'Loading…', inline = false }) => (
+  <div className={classNames('loader', inline && 'loader--inline')} role='status'>
+    <span className={classNames('spinner', !inline && 'spinner--lg')} aria-hidden='true' />
+    <span className={inline ? undefined : 'visually-hidden'}>{label}</span>
+  </div>
+)
 
 export default Loader

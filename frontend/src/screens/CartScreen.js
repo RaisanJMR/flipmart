@@ -1,21 +1,17 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { Link } from 'react-router-dom'
-import { Row, Col, ListGroup, Image, Form, Button, Card } from 'react-bootstrap'
-import Message from '../components/Message'
 import { addToCart, removeFromCart } from '../actions/cartActions'
+import PageHeader from '../components/ui/PageHeader'
+import Button from '../components/ui/Button'
+import EmptyState from '../components/ui/EmptyState'
 
 const CartScreen = ({ match, location, history }) => {
-  // console.log(location)
-  // console.log(match)
   const productId = match.params.id
   const qty = location.search ? Number(location.search.split('=')[1]) : 1
-  // console.log(qty)
-  // console.log(productId)
   const dispatch = useDispatch()
   const cart = useSelector((state) => state.cart)
   const { cartItems } = cart
-  // console.log('cartItems',cartItems)
   useEffect(() => {
     if (productId) {
       dispatch(addToCart(productId, qty))
@@ -25,88 +21,120 @@ const CartScreen = ({ match, location, history }) => {
     dispatch(removeFromCart(id))
   }
   const CheckOutHandler = () => {
-    console.log('check out handler')
     history.push('/login?redirect=shipping')
   }
+
+  const itemCount = cartItems.reduce((acc, item) => acc + item.qty, 0)
+  const subtotal = cartItems.reduce((acc, item) => acc + item.qty * item.price, 0).toFixed(2)
+
+  if (cartItems.length === 0) {
+    return (
+      <>
+        <PageHeader title='Shopping cart' />
+        <EmptyState
+          icon='fa-shopping-bag'
+          title='Your cart is empty'
+          description='Looks like you haven’t added anything yet. Explore the catalog to find something you love.'
+          action={
+            <Button to='/' variant='primary'>
+              Continue shopping
+            </Button>
+          }
+        />
+      </>
+    )
+  }
+
   return (
-    <Row>
-      <Col md={8}>
-        <h1>Shopping Cart</h1>
-        {cartItems.length === 0 ? (
-          <Message>
-            Your cart is empty <Link to='/'>Go back</Link>{' '}
-          </Message>
-        ) : (
-          <ListGroup variant='flush'>
+    <>
+      <PageHeader
+        title='Shopping cart'
+        description={`${itemCount} ${itemCount === 1 ? 'item' : 'items'} in your cart`}
+      />
+      <div className='split-layout'>
+        <section className='card' aria-label='Cart items'>
+          <ul className='line-items'>
             {cartItems.map((item) => (
-              <ListGroup.Item key={item.product}>
-                <Row>
-                  <Col md={2}>
-                    <Image src={item.image} alt={item.name} fluid rounded />
-                  </Col>
-                  <Col md={3}>
-                    <Link to={`/product/${item.product}`}>{item.name}</Link>
-                  </Col>
-                  <Col md={2}>${item.price}</Col>
-                  <Col md={2}>
-                    <Form.Control
-                      as='select'
-                      value={item.qty}
-                      onChange={(e) =>
-                        dispatch(
-                          addToCart(item.product, Number(e.target.value))
-                        )
-                      }
-                    >
-                      {[...Array(item.countInStock).keys()].map((x) => (
-                        <option key={x + 1} value={x + 1}>
-                          {x + 1}
-                        </option>
-                      ))}
-                    </Form.Control>
-                  </Col>
-                  <Col md={2}>
-                    <Button
-                      type='Button'
-                      variant='light'
-                      onClick={() => removeFromCartHandler(item.product)}
-                    >
-                      <i className='fas fa-trash'></i>
-                    </Button>
-                  </Col>
-                </Row>
-              </ListGroup.Item>
+              <li key={item.product} className='line-item'>
+                <div className='line-item__media'>
+                  <img src={item.image} alt='' />
+                </div>
+                <div>
+                  <Link to={`/product/${item.product}`} className='line-item__name'>
+                    {item.name}
+                  </Link>
+                  <p className='line-item__meta'>${item.price} each</p>
+                </div>
+                <div className='line-item__controls'>
+                  <label htmlFor={`qty-${item.product}`} className='visually-hidden'>
+                    Quantity for {item.name}
+                  </label>
+                  <select
+                    id={`qty-${item.product}`}
+                    className='select select--sm'
+                    value={item.qty}
+                    onChange={(e) =>
+                      dispatch(addToCart(item.product, Number(e.target.value)))
+                    }
+                  >
+                    {[...Array(item.countInStock).keys()].map((x) => (
+                      <option key={x + 1} value={x + 1}>
+                        {x + 1}
+                      </option>
+                    ))}
+                  </select>
+                  <span className='line-item__total'>
+                    ${(item.qty * item.price).toFixed(2)}
+                  </span>
+                  <Button
+                    variant='danger-ghost'
+                    size='sm'
+                    iconOnly
+                    aria-label={`Remove ${item.name} from cart`}
+                    data-tooltip='Remove'
+                    onClick={() => removeFromCartHandler(item.product)}
+                  >
+                    <i className='fas fa-trash-alt' aria-hidden='true' />
+                  </Button>
+                </div>
+              </li>
             ))}
-          </ListGroup>
-        )}
-      </Col>
-      <Col md={4}>
-        <Card>
-          <ListGroup variant='flush'>
-            <ListGroup.Item>
-              <h2>
-                Subtotal ({cartItems.reduce((acc, item) => acc + item.qty, 0)})
-                items
-              </h2>
-              $
-              {cartItems
-                .reduce((acc, item) => acc + item.qty * item.price, 0)
-                .toFixed(2)}
-            </ListGroup.Item>
-            <ListGroup.Item>
-              <Button
-                type='button'
-                className='btn-block'
-                disabled={cartItems.length === 0}
-                onClick={CheckOutHandler}
-              >
-                Proceed To Checkout
-              </Button>
-            </ListGroup.Item>
-          </ListGroup>
-        </Card>
-      </Col>
-    </Row>
+          </ul>
+        </section>
+
+        <aside className='split-layout__aside card' aria-label='Order summary'>
+          <div className='card__header'>
+            <h2>Summary</h2>
+          </div>
+          <div className='card__body stack'>
+            <dl className='summary'>
+              <div className='summary__row'>
+                <dt>Items</dt>
+                <dd>{itemCount}</dd>
+              </div>
+              <div className='summary__row summary__row--total'>
+                <dt>Subtotal</dt>
+                <dd>${subtotal}</dd>
+              </div>
+            </dl>
+            <p className='text-xs text-subtle'>Shipping and taxes are calculated at checkout.</p>
+            <Button
+              variant='primary'
+              size='lg'
+              block
+              disabled={cartItems.length === 0}
+              onClick={CheckOutHandler}
+            >
+              Proceed to checkout
+              <i className='fas fa-arrow-right' aria-hidden='true' />
+            </Button>
+            <Button to='/' variant='ghost' block>
+              Continue shopping
+            </Button>
+          </div>
+        </aside>
+      </div>
+    </>
   )
 }
 

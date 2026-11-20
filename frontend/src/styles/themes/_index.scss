@@ -1,0 +1,18 @@
+@use 'light' as *;
+@use 'dark' as *;
+
+:root,
+[data-theme='light'] {
+  @include light-theme;
+}
+
+[data-theme='dark'] {
+  @include dark-theme;
+}
+
+// Before the inline theme script runs (or with JS disabled), follow the OS.
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    @include dark-theme;
+  }
+}
